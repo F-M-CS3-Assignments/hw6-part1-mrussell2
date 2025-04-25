@@ -22,6 +22,30 @@ void TestConstructor(){
 
 	cout << "PASSED!"<< endl << endl;
 }
+//test GetMin/GetMax
+void TestGetMinAndMax() {
+    RedBlackTree rbt;
+    rbt.Insert(50);
+    rbt.Insert(20);
+    rbt.Insert(80);
+    rbt.Insert(10);
+    rbt.Insert(100);
+    assert(rbt.GetMin() == 10);
+    assert(rbt.GetMax() == 100);
+}
+//Test GetMin/GetMax on empty tree
+void TestMinMaxOnEmpty() {
+    RedBlackTree rbt;
+    try {
+        rbt.GetMin();
+        assert(false);
+    } catch (runtime_error&) {}
+
+    try {
+        rbt.GetMax();
+        assert(false);
+    } catch (runtime_error&) {}
+}
 
 void TestInsertFirstNode(){
 	cout << "Testing Insert One Node..." << endl;
@@ -50,7 +74,6 @@ void TestInsertSecondNode(){
 
 	cout << "PASSED!" << endl << endl;
 }
-
 
 void TestInsertThirdNode(){
 	cout << "Testing Insert Third Node..." << endl;
@@ -86,7 +109,14 @@ void TestInsertThirdNode(){
 void TestInsertFourthNode(){
 	cout << "Testing Insert Fourth Node..." << endl;
 
-	cout << "TESTS MISSING" << endl << endl;
+	RedBlackTree *rbt = new RedBlackTree();
+	rbt->Insert(30);
+	rbt->Insert(15);
+	rbt->Insert(10); 
+	rbt->Insert(45); 
+	//cout << "rbt:"  << rbt->ToPrefixString() << endl;
+	assert(rbt->ToPrefixString() == " B15  B10  B30  R45 ");
+	delete rbt;
 	
 	cout << "PASSED!" << endl << endl;
 }
@@ -102,8 +132,17 @@ void TestInsertFifthNode(){
 	//cout << "result: "  << rbt->ToPrefixString() << endl;
 	assert(rbt->ToPrefixString() == " B30  B15  R10  R25  B45 ");
 	delete rbt;
+
+	rbt = new RedBlackTree();
+	rbt->Insert(18);
+	rbt->Insert(12);
+	rbt->Insert(35);
+	rbt->Insert(40);
+	rbt->Insert(25);
+	//cout << "result: "  << rbt->ToPrefixString() << endl;
+	assert(rbt->ToPrefixString() == " B18  B12  B35  R25  R40 ");
+	delete rbt;
 	
-	cout << "TESTS MISSING" << endl << endl;
 	
 	cout << "PASSED!" << endl << endl;
 }
@@ -118,8 +157,7 @@ void TestToStrings(){
 	rbt.Insert(15);
 	rbt.Insert(5);
 	rbt.Insert(13);
-	rbt.Insert(7);
-
+	rbt.Insert(7); 
 	assert(rbt.ToPrefixString() == " B12  B7  R5  R11  B15  R13 ");
 	assert(rbt.ToInfixString() == " R5  B7  R11  B12  R13  B15 ");
 	assert(rbt.ToPostfixString() == " R5  R11  B7  R13  B15  B12 ");
@@ -170,6 +208,45 @@ void TestInsertRandomTests(){
 	
 	cout << "PASSED!" << endl << endl;
 }
+//Test Duplicate Insertion
+void TestDuplicateInsertError() {
+    RedBlackTree rbt;
+    rbt.Insert(42);
+    try {
+        rbt.Insert(42);
+        assert(false); // Should not reach here
+    } catch (invalid_argument&) {
+        assert(true); // Caught expected exception
+    }
+}
+void TestLLRotation() {
+    RedBlackTree rbt;
+    rbt.Insert(30);
+    rbt.Insert(20);
+    rbt.Insert(10);  // Should cause right rotation at 30
+    assert(rbt.ToInfixString() == " R10  B20  R30 ");
+}
+void TestRRRotation() {
+    RedBlackTree rbt;
+    rbt.Insert(10);
+    rbt.Insert(20);
+    rbt.Insert(30);  // Should cause left rotation at 10
+    assert(rbt.ToInfixString() == " R10  B20  R30 ");
+}
+void TestLRRotation() {
+    RedBlackTree rbt;
+    rbt.Insert(30);
+    rbt.Insert(10);
+    rbt.Insert(20);  // Should cause left-right rotation
+    assert(rbt.ToInfixString() == " R10  B20  R30 ");
+}
+void TestRLRotation() {
+    RedBlackTree rbt;
+    rbt.Insert(10);
+    rbt.Insert(30);
+    rbt.Insert(20);  // Should cause right-left rotation
+    assert(rbt.ToInfixString() == " R10  B20  R30 ");
+}
 
 void TestCopyConstructor(){
 	cout << "Testing Copy Constructor..." << endl;
@@ -194,11 +271,6 @@ void TestCopyConstructor(){
 	cout << "PASSED!" << endl << endl;
 }
 
-
-
-
-
-
 void TestContains(){
 	cout << "Testing Contains..." << endl;
 
@@ -221,24 +293,9 @@ void TestContains(){
 	delete rbt;
 
 	
-	cout << "TESTS MISSING" << endl << endl;
+	
 	cout << "PASSED!" << endl << endl;
 }
-
-
-
-
-void TestGetMinimumMaximum(){
-	cout << "Testing Get Minimum and Get Maximum..." << endl;
-
-	cout << "TESTS MISSING" << endl << endl;
-
-	cout << "PASSED!" << endl << endl;
-}
-
-
-
-
 
 int main(){
 
@@ -254,11 +311,18 @@ int main(){
 
 	TestToStrings();
 	TestInsertRandomTests();
+	TestDuplicateInsertError();
+	TestGetMinAndMax(); 
+	TestMinMaxOnEmpty(); 
+
+	TestLLRotation();
+    TestRRRotation();
+	TestLRRotation();
+	TestRLRotation();
 
 	TestCopyConstructor();
 
 	TestContains();
-	TestGetMinimumMaximum();
 
 	
 	cout << "ALL TESTS PASSED!!" << endl;
