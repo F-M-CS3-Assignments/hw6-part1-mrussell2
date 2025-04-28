@@ -6,28 +6,33 @@
 #include "RedBlackTree.h"
 
 using namespace std;
-//basic constructor
+
+//used ZyBook chapter 16 as a reference on Red-Black trees
+//another reference used: https://www.geeksforgeeks.org/red-black-tree-in-cpp/
+
+
+//default constructor, initializes empty tree
 RedBlackTree::RedBlackTree() {
     root = nullptr;
     numItems = 0;
 }
-//constructur with int input
+//constructor with int input, insert newData
 RedBlackTree::RedBlackTree(int newData) {
     Insert(newData);
 }
-//constructor with RBT input
+//copy constructor, copies another red black tree
 RedBlackTree::RedBlackTree(const RedBlackTree& other) {
     root = CopyOf(other.root);
     numItems = other.numItems;
 }
-//function to allow to print tree
+//Returns string representation in infix order.
 string RedBlackTree::ToInfixString(const RBTNode* node) {
     if (node == nullptr) return "";
     return ToInfixString(node->left) +
            " " + (node->color == COLOR_RED ? "R" : "B") + to_string(node->data) + " " +
            ToInfixString(node->right);
 }
-//function to print prefix to a string
+//Returns string representation in prefix order.
 string RedBlackTree::ToPrefixString(const RBTNode* node) {
     if (node == nullptr) return "";
     return std::string(" ") +
@@ -35,7 +40,7 @@ string RedBlackTree::ToPrefixString(const RBTNode* node) {
        ToPrefixString(node->left) +
        ToPrefixString(node->right);
 }
-// function to print postfix to a string
+// Returns string representation in postfix order.
 string RedBlackTree::ToPostfixString(const RBTNode* node) {
     if (node == nullptr) return "";
     return ToPostfixString(node->left) +
@@ -50,7 +55,7 @@ void RedBlackTree::Insert(int newData) {
     }
     RBTNode* node = new RBTNode; //create new node
     node->data = newData; // set data to the input
-    node->color = COLOR_RED;
+    node->color = COLOR_RED; // always insert new nodes red first (standard Red-Black property)
 
     if (root == nullptr) { // if the root is null set color to black and sent root to input node
         node->color = COLOR_BLACK;
@@ -59,6 +64,8 @@ void RedBlackTree::Insert(int newData) {
         return;
     }
     BasicInsert(node); // if root is not empty use BasicInsert to insert node
+
+    // If parent is red, violation of Red-Black property occurs — call InsertFixUp
     if (node->parent != nullptr && node->parent->color == COLOR_RED) {
         InsertFixUp(node);
     }
@@ -69,6 +76,7 @@ bool RedBlackTree::Contains(int data) const {
     return Get(data) != nullptr;
 }
 
+//finds a node with specific value or returns nullptr
 RBTNode* RedBlackTree::Get(int data) const {
     RBTNode* curr = root;
     while (curr) {
@@ -78,20 +86,22 @@ RBTNode* RedBlackTree::Get(int data) const {
     return nullptr;
 }
 
+//finds the uncle of a node
 RBTNode* RedBlackTree::GetUncle(RBTNode* node) const {
     if (!node || !node->parent || !node->parent->parent) return nullptr;
     RBTNode* gp = node->parent->parent;
     return (gp->left == node->parent) ? gp->right : gp->left;
 }
 
+//returns true if node is left child of parent
 bool RedBlackTree::IsLeftChild(RBTNode* node) const {
     return node && node->parent && node->parent->left == node;
 }
-
+//returns true if node is right child of a parent
 bool RedBlackTree::IsRightChild(RBTNode* node) const {
     return node && node->parent && node->parent->right == node;
 }
-
+// returns minimum value in tree
 int RedBlackTree::GetMin() const {
     if (!root) throw runtime_error("Tree is empty");
     RBTNode* node = root;
@@ -99,7 +109,7 @@ int RedBlackTree::GetMin() const {
     return node->data;
 }
 
-
+//returns maximum value in tree
 int RedBlackTree::GetMax() const {
     if (!root) throw runtime_error("Tree is empty");
     RBTNode* node = root;
@@ -107,6 +117,8 @@ int RedBlackTree::GetMax() const {
     return node->data;
 }
 
+//restores Red-Black tree properties after insertion
+//handles color changes and rotations based on tree after insertion
 void RedBlackTree::InsertFixUp(RBTNode* new_node) {
     RBTNode* parent = new_node->parent;
     RBTNode* uncle = GetUncle(new_node);
@@ -157,10 +169,12 @@ void RedBlackTree::InsertFixUp(RBTNode* new_node) {
     root->color = COLOR_BLACK;
 }
 
+//standard binary search tree insertion 
 void RedBlackTree::BasicInsert(RBTNode* node) {
     RBTNode* current = root;
     RBTNode* parent = nullptr;
 
+    //traverse tree to find correct position for node
     while (current != nullptr) {
         parent = current;
         if (node->data < current->data)
@@ -169,6 +183,7 @@ void RedBlackTree::BasicInsert(RBTNode* node) {
             current = current->right;
     }
 
+    //link node to parrent node
     node->parent = parent;
     if (node->data < parent->data)
         parent->left = node;
@@ -176,6 +191,7 @@ void RedBlackTree::BasicInsert(RBTNode* node) {
         parent->right = node;
 }
 
+//copies the subtree at rooted node
 RBTNode* RedBlackTree::CopyOf(const RBTNode* node) {
     if (!node) return nullptr;
     RBTNode* copy = new RBTNode(*node);
@@ -187,6 +203,8 @@ RBTNode* RedBlackTree::CopyOf(const RBTNode* node) {
 }
 
 // rotations
+
+//rotates subtree left around given node n
 void RedBlackTree::LeftRotate(RBTNode* n) {
     RBTNode* rChild = n->right;
     RBTNode* rlGranChild = rChild->left;
@@ -198,7 +216,7 @@ void RedBlackTree::LeftRotate(RBTNode* n) {
         n->parent->right = rChild;
     }
     else {
-        root = rChild;
+        root = rChild; // rotation at root
     }
 
     rChild->parent = n->parent;
@@ -208,6 +226,7 @@ void RedBlackTree::LeftRotate(RBTNode* n) {
     if (rlGranChild)
         rlGranChild->parent = n;
 }
+//rotates subtree right around given node n
 void RedBlackTree::RightRotate(RBTNode* n) {
     RBTNode* lChild = n->left;
     RBTNode* lrGranChild = lChild->right;
@@ -219,7 +238,7 @@ void RedBlackTree::RightRotate(RBTNode* n) {
         n->parent->right = lChild;
     }
     else {
-        root = lChild;
+        root = lChild; // rotation at root
     }
 
     lChild->parent = n->parent;
@@ -229,35 +248,3 @@ void RedBlackTree::RightRotate(RBTNode* n) {
     if (lrGranChild)
         lrGranChild->parent = n;
 }
-
-
-
-
-// void TestSimpleConstructor(){
-// 	cout << "Testing Simple Constructor... " << endl;
-// 	RedBlackTree rbt = RedBlackTree();
-// 	//cout << "empty r-b-tree: " << rbt.ToInfixString() << endl;
-// 	assert(rbt.ToInfixString() == "");
-	
-// 	cout << "PASSED!"<< endl << endl;
-// }
-
-
-// void TestInsertFirstNode(){
-// 	cout << "Testing Insert One Node..." << endl;
-// 	RedBlackTree rbt = RedBlackTree();
-// 	rbt.Insert(30);
-// 	//cout << "rbt: " << rbt.ToPrefixString() << endl;
-// 	assert(rbt.ToInfixString() == " B30 ");
-
-// 	cout << "PASSED!" << endl << endl;
-// }
-
-
-// int main(){	
-// 	TestSimpleConstructor();
-// 	TestInsertFirstNode();
-
-// 	cout << "ALL TESTS PASSED!!" << endl;
-// 	return 0;
-// }

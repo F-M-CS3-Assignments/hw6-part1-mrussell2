@@ -101,8 +101,6 @@ void TestInsertThirdNode(){
 	
 	// more tests go here
 	// consider some symmetry!
-	
-	cout << "TESTS MISSING" << endl << endl;
 	cout << "PASSED!" << endl << endl;
 }
 
